@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body { background: lightskyblue; display: flex; align-items: center; justify-content: center; }
+    canvas
+     {
+      border: 1px solid white; 
+     }
+     .btns
+     {
+      margin-left: 30px;
+      margin-top: -540px;
+      width: 350px;
+      height: 60px;
+     }
+     .btn
+     {
+      color: #fff !important;
+      text-transform: uppercase;
+      text-decoration: none;
+      background: #ed3330;
+      padding: 20px;
+      border-radius: 25px;
+      display: inline-block;
+      border: 1px solid blue;
+      transition: all 0.4s ease 0s;
+      margin-left: -10%;
+     }
+     .btn:hover
+     {
+      background: #434343;
+      letter-spacing: 1px;
+      box-shadow: 5px 40px -10px rgba(0,0,0,0.57);
+      transition: all 0.4s ease 0s;
+     }
+     h2
+     {
+      color: #6A55D7;
+     }
+     .storescore
+     {
+      position: fixed;
+      margin-left:20%;
+      margin-top:10%;
+      font-size: 40px;
+      
+     }
+     .textfield
+     {
+       margin-left: 10px;
+     /* margin-top: -150px; */
+      height: 30px; 
+      width: 100px; 
+      font-size: 20px;
+      color:black;
+      text-transform: uppercase;
+      text-decoration: none;
+      background: rgb(183, 185, 38);
+      padding: 10px;
+      border-radius: 15px;
+      display: inline-block;
+      border: 1px solid blue;
+      transition: all 0.4s ease 0s;
+     }
+     .atorescore>#score
+     {
+      margin-top: -30px; 
+     }
+     .heading
+     {
+      position: fixed;
+      height: 100px;
+      width: 350px;
+      margin-left: 500px;
+      margin-top: -80px;
+     }
+     li{
+       font-size:25px;
+       margin-left: -20%;
+     }
+  </style>
+</head>
+<body onload="getStoredScore()">
+<canvas width="600" height="700" id="game" style="background-color: rgb(15, 189, 65); border:10px solid; border-radius: 10 px; border-color: rgb(197, 64, 23); margin-left: -40%;"></canvas>
+
+<div class="heading">
+  <h2 style="font-size: 45px;color:brown; margin-left: -50%; margin-top: -70%;">🐍🐍Snake Game🐍🐍</h2>
+  <h1 style="margin-left: -25%; font-family:cursive; text-decoration: underline;"> Functions of the Game</h1>
+  <ul>
+    <li>👉Press any key from up,down,left and right to start.</li>
+    <li>👉Press Spacebar to Pause and Resume the game.</li>
+    <li>👉Press R to Restart the Game</li>
+    <li>👉Beat the HIGHSCORE if you can </li>
+    </ul>
+    
+</div>
+
+<div class="storescore">
+  Score:<input class="textfield" type="text" id="score">🍎
+
+<br><br>
+ Highscore:<input class="textfield" type="text" id="highscore">🍎
+</div>
+<script>
+
+var restartBtn = document.getElementById("restartBtn");
+var pauseBtn = document.getElementById("pauseBtn");
+var resumeBtn = document.getElementById("resumeBtn");
+var canvas = document.getElementById('game');
+var canvas = document.getElementById('game');
+var context = canvas.getContext('2d');
+var grid = 16;
+var count = 0;
+var lastMove = 'right';
+var scores = 0;
+var max=0;
+var currscore = 0;
+var lastMove="";
+var positionX;
+var positionY;
+var isPaused=false;
+var gamePaused;
+
+window.addEventListener('load' , e  => {
+
+  getSnakeCoordinates();
+  getAppleCoordinates();
+  getStoredScore();
+  displayaddscores();
+  getscore();
+
+});
+
+function getscore()
+{
+if(!localStorage.currscore)
+{
+  scores=0;
+  addScore(scores);
+}
+else
+{
+scores = JSON.parse(localStorage.getItem('currscore'));
+}
+}
+
+
+
+function resumeAndpause()
+{
+  if(isPaused==true){
+  getSnakeCoordinates();
+displayaddscores();
+scores = JSON.parse(localStorage.getItem('currscore'));
+console.log("scores resume"+scores);
+
+isPaused=false;
+  }
+  else{
+    setSnakeCoordinates();
+setAppleCoordinates();
+
+console.log(currscore);
+displayaddscores();
+context.fillStyle = 'white'; 
+  context.font = "60px Arial";
+  context.textAlign = "center";
+context.fillText("Game Paused" , canvas.width/2, canvas.height/2);
+isPaused=true;
+  }
+}
+
+function setScore()
+{
+  localStorage.currscore = JSON.stringify(scores);
+}
+
+function getAppleCoordinates()
+{
+  if(!localStorage.apple)
+  {
+    apple =
+   {
+    x: 320,
+    y: 320
+   }
+  }
+  else
+  {
+    apple = JSON.parse(localStorage.getItem('apple'));
+  }
+}
+
+function getSnakeCoordinates()
+{
+if(!localStorage.snake)
+  {
+    snake = 
+    {
+      x : 160,
+      y : 160 ,
+     cells : [{x:160 , y:160} , {x:144 , y:160}]
+    }
+  }
+  else
+  {
+    snake = JSON.parse(localStorage.getItem('snake'));
+  }
+}
+
+function setSnakeCoordinates()
+{
+  localStorage.snake = JSON.stringify(snake);
+}
+
+function setAppleCoordinates()
+{
+  localStorage.apple = JSON.stringify(apple);
+}
+
+function storeScore(scores)
+{
+  if(localStorage.max<scores)
+  {
+    max=scores;
+    storemaxscores(max);
+    localStorage.max = JSON.stringify(max);
+  }
+}
+function storemaxscores(maxscores)
+{
+  document.getElementById('highscore').value = maxscores;
+}
+function getStoredScore()
+{
+  if(!localStorage.max)
+  {
+    localStorage.max = JSON.stringify(0);
+  }
+  else
+  {
+    document.getElementById("highscore").value = localStorage.max;
+  }
+}
+
+
+
+function restart(){
+  localStorage.currscore=JSON.stringify(0);
+  document.getElementById('score').value = 0;
+  localStorage.removeItem('snake');
+      localStorage.removeItem('apple');
+  location.reload();
+}
+
+
+var snake = 
+{
+  x : 160,
+  y : 160 ,
+ cells : [{x:160 , y:160} , {x:144 , y:160}] ,
+ die : false , // to close the game
+ eatApple : false , // set when eat apple , to increase the size
+};
+
+var apple = {
+  x: 320,
+  y: 320
+};
+
+
+
+
+// draw apple
+function drawApple()
+{
+  context.fillStyle = 'red';
+  context.fillRect(apple.x, apple.y, grid-1, grid-1); 
+}
+drawApple();
+
+// draw snake
+function drawSnake()
+{
+  context.fillStyle = 'pink';
+  context.fillRect(snake.cells[0].x, snake.cells[0].y, grid-1, grid-1);
+  context.fillStyle = 'black';
+  for(let i=1 ; i<snake.cells.length ; i++)
+    context.fillRect(snake.cells[i].x, snake.cells[i].y, grid-1, grid-1);
+}
+drawSnake();  
+
+//Update Coordinates
+function moveSnake( dx , dy)
+{
+  snake.x += dx ;
+  snake.y += dy ;
+  snake.cells.unshift({x: snake.x , y: snake.y}) ; // Insert at 0th position
+  if(!snake.eatApple)snake.cells.pop();  // remove the last element
+  else snake.eatApple = false ; // don't remove last element to increase the size .
+}
+
+// To check snake touched the boundary
+function checkBoundary(){
+  if( snake.x < 0 || snake.x >= canvas.width || snake.y < 0 || snake.y >= canvas.height){
+    snake.die = true ;
+  }
+}
+
+// get random whole numbers in a specific range
+function getRandomInt() {
+  return Math.floor(Math.random() * 25) * grid;
+}
+
+//Prevent to apple placed on snake
+function checkAppleIsOnSnake(){
+   for(let i = 0 ; i < snake.cells.length ; i++){
+    if( apple.x == snake.cells[i].x && apple.y == snake.cells[i].y){
+      return true ;
+    }
+  }
+}
+
+
+
+// Snake Bite to itself
+function checkSnakeBiteItself(){
+  for(let i = 4 ; i < snake.cells.length ; i++){
+    if( snake.x == snake.cells[i].x && snake.y == snake.cells[i].y){
+      snake.die = true ;
+       localStorage.removeItem('snake');
+      localStorage.removeItem('apple');
+      //localStorage.removeItem('currscore');
+    //location.reload();
+    }
+  }
+}
+
+
+// Generate Apple's new coordinate
+function generateApple(){
+  apple.x = getRandomInt();
+  apple.y = getRandomInt();
+  if( checkAppleIsOnSnake() ){
+    generateApple() ;
+  }  
+}
+
+
+
+
+
+// snake's head on apple
+function checkEatApple(){
+  if(snake.x == apple.x && snake.y == apple.y){
+    snake.eatApple = true ;
+    scores+=5;
+    currscore = scores;
+    //localStorage.currscore = scores;
+    storeScore(scores);
+    addScore(scores);
+    generateApple(); // generate new coordinates for Apple .
+    drawApple();
+    
+  }
+}
+function displayaddscores()
+{
+  document.getElementById("score").value = localStorage.currscore;
+}
+function addScore(scores)
+{
+  localStorage.currscore = JSON.stringify(scores);
+  document.getElementById("score").value = scores;
+}
+
+var gameover=false;
+function gameOver(){
+  gameover=true;
+  localStorage.removeItem('positionX');
+  localStorage.removeItem('positionY');
+  localStorage.removeItem('snake');
+  localStorage.removeItem('apple');
+  localStorage.removeItem('currscore');
+  storeScore(scores);  
+  document.getElementById('score').value = 0;
+  context.clearRect(0, 0, canvas.width,canvas.height);// Clear the Canvas
+  snake.cells = [];
+  context.fillStyle = 'white'; 
+  context.font = "100px Arial";
+  context.textAlign = "center";
+  context.fillText("Game Over" , canvas.width/2, canvas.height/2);
+}
+// listen to keyboard events to move the snake
+document.addEventListener('keydown', function(e) 
+{
+  let dx = 0  , dy = 0  ;
+  //space for pause and resume
+  if(e.keyCode==32){
+    if(gameover==false)
+    resumeAndpause();
+  }
+  else if(e.keyCode == 82 && gameover==true )
+  {
+    restart();
+  }
+  // left arrow key
+  else if (e.keyCode == 37 && lastMove != 'right') 
+  {
+   lastMove = 'left' ;
+  }
+   // up arrow key
+  else if (e.keyCode == 38 && lastMove != 'down' ) 
+  {
+    lastMove = 'up' ;
+  }
+   // right arrow key
+  else if (e.keyCode == 39 && lastMove != 'left' ) 
+  {
+    lastMove = 'right' ;
+  }
+   // down arrow key
+  else if (e.keyCode == 40 && lastMove != 'up') 
+  {
+    lastMove = 'down' ;
+  }
+  else
+  {
+    return;
+  }
+  draw();
+});
+
+function draw()
+{
+  if(isPaused==false)
+{
+   context.clearRect(0, 0, canvas.width,canvas.height);// Clear the Canvas
+ if(lastMove.localeCompare("left")==0)
+  {
+    moveSnake(-grid,0);
+  }
+  else if(lastMove.localeCompare("right")==0)
+  {
+    moveSnake(grid,0);
+  }
+  else if(lastMove.localeCompare("up")==0)
+  {
+    moveSnake(0,-grid);
+  }
+  else if(lastMove.localeCompare("down")==0)
+  {
+    moveSnake(0,grid);
+  }
+  checkBoundary(); //check boundary
+  checkSnakeBiteItself(); 
+  checkEatApple(); // to increase the size
+  if(snake.die)
+  {
+    gameOver();
+    return ;
+  }
+  drawSnake();
+  drawApple();
+ }
+}
+
+
+let game = setInterval(draw,100);
+let bonus = setInterval(bonuses,10000);
+
+</script>
+</body>
+</html>
